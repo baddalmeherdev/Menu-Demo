@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Auto-Pagination Menu Book</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        /* RESET & VARIABLES */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-color: #0d0d0d;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --gold-primary: #D4AF37;
+            --gold-light: #F3E5AB;
+            --border-color: rgba(212, 175, 55, 0.4);
+        }
+
+        body {
+            background-color: #1a1a1a;
+            font-family: 'Lato', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px; 
+            padding: 40px 20px;
+        }
+
+        /* STRICT A4 PAGE SETTINGS (A4 Proportions) */
+        .a4-page {
+            width: 210mm;
+            min-width: 210mm;
+            height: 297mm;
+            min-height: 297mm;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top, #181818 0%, var(--bg-color) 100%);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+            padding: 12mm 15mm 20mm 15mm; 
+            border: 2px solid var(--gold-primary);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .a4-page::before {
+            content: ''; position: absolute;
+            top: 4mm; left: 4mm; right: 4mm; bottom: 4mm;
+            border: 1px solid var(--border-color);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-content {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        /* HEADER (Compact) */
+        .menu-header { text-align: center; margin-bottom: 15px; }
+        .client-logo {
+            width: 60px; height: 60px; border-radius: 50%;
+            border: 2px solid var(--gold-primary); padding: 2px;
+            background: #000; margin-bottom: 5px; object-fit: cover;
+        }
+        .menu-header h1 {
+            font-family: 'Cinzel', serif; color: var(--gold-primary);
+            font-size: 2.2rem; letter-spacing: 2px; text-transform: uppercase;
+        }
+
+        /* CATEGORY TITLE (Compact) */
+        .category-title {
+            font-family: 'Cinzel', serif; color: var(--text-main);
+            font-size: 1.4rem; text-transform: uppercase; letter-spacing: 2px;
+            text-align: center; margin: 10px 0 12px;
+            border-bottom: 1px solid var(--border-color); padding-bottom: 5px;
+        }
+
+        /* DISH ROW (Slimmer to fit 10 items) */
+        .dish-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.02);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        /* COMPACT DISH PHOTO */
+        .dish-img-container {
+            width: 60px; height: 60px; flex-shrink: 0;
+            border-radius: 6px; border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .dish-img-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* COMPACT DISH DETAILS */
+        .dish-info { flex: 1; }
+        .dish-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; }
+        .dish-name {
+            font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.1rem;
+            color: var(--gold-light);
+        }
+        .dish-price { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.1rem; color: var(--gold-primary); }
+        .dish-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.3; }
+
+        /* COMPACT QR CODE */
+        .dish-qr {
+            display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
+            background: rgba(212, 175, 55, 0.08); border: 1px solid var(--border-color);
+            padding: 4px; border-radius: 6px; min-width: 55px;
+        }
+        .dish-qr img { width: 40px; height: 40px; background: #fff; padding: 2px; border-radius: 4px; }
+        .dish-qr span {
+            font-size: 0.55rem; color: var(--gold-light); margin-top: 3px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* PAGE DOWNLOAD BUTTON */
+        .download-page-btn {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--gold-primary);
+            border: 1px solid var(--gold-primary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: 'Lato', sans-serif;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .download-page-btn:active { transform: translateX(-50%) scale(0.95); }
+
+        .page-num {
+            position: absolute; bottom: 15px; right: 20px;
+            color: rgba(212, 175, 55, 0.5); font-size: 0.8rem; font-family: 'Cinzel', serif;
+        }
+
+        /* PRINT STYLES */
+        @media print {
+            body { background: none; padding: 0; margin: 0; gap: 0; }
+            .a4-page { box-shadow: none; margin: 0; border: none; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .download-page-btn { display: none !important; }
+            .a4-page::before { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="all-pages-container" style="display: contents;"></div>
+
+    <script>
+        // =======================================================
+        // MENU DATA - YAHAN AAP APNE SECTIONS ADD KAREIN
+        // =======================================================
+        const menuSections = [
+            {
+                sectionName: "Starters",
+                items: [
+                    { id: "tandoori-chicken", name: "Tandoori Chicken", price: "₹299", desc: "Bone-in chicken marinated in yogurt and royal spices.", image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=150&q=80" },
+                    { id: "malai-tikka", name: "Murgh Malai Tikka", price: "₹319", desc: "Creamy chicken chunks roasted over charcoal.", image: "https://images.unsplash.com/photo-1567158780614-722c23f7902a?w=150&q=80" },
+                    { id: "paneer-tikka", name: "Paneer Tikka", price: "₹219", desc: "Fresh cottage cheese cubes marinated with capsicum.", image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=150&q=80" },
+                    { id: "hara-bhara", name: "Hara Bhara Kabab", price: "₹189", desc: "Healthy pan-fried patties made with spinach and green peas.", image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=150&q=80" }
+                ]
+            },
+            {
+                sectionName: "Main Course",
+                items: [
+                    { id: "butter-chicken", name: "Butter Chicken", price: "₹279", desc: "Tender chicken in a rich, velvety tomato gravy.", image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=150&q=80" },
+                    { id: "mutton-rogan", name: "Mutton Rogan Josh", price: "₹329", desc: "Kashmiri delicacy cooked with intense spices.", image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=150&q=80" },
+                    { id: "dal-makhani", name: "Dal Makhani", price: "₹189", desc: "Black lentils slow-cooked overnight with cream.", image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=150&q=80" },
+                    { id: "paneer-butter", name: "Paneer Butter Masala", price: "₹229", desc: "Cottage cheese cooked in rich tomato and cashew gravy.", image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=150&q=80" },
+                    { id: "kadhai-chicken", name: "Kadhai Chicken", price: "₹289", desc: "Spicy chicken cooked with bell peppers and whole spices.", image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=150&q=80" },
+                    { id: "mix-veg", name: "Mix Vegetable", price: "₹199", desc: "Seasonal fresh vegetables cooked in dry spices.", image: "https://images.unsplash.com/photo-1567158780614-722c23f7902a?w=150&q=80" }
+                ]
+            },
+            {
+                sectionName: "Biryani & Breads",
+                items: [
+                    { id: "chicken-biryani", name: "Chicken Biryani", price: "₹249", desc: "Signature biryani cooked in authentic dum style.", image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=150&q=80" },
+                    { id: "mutton-biryani", name: "Mutton Biryani", price: "₹399", desc: "Tender mutton layered with aromatic basmati rice.", image: "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=150&q=80" },
+                    { id: "butter-naan", name: "Butter Naan", price: "₹45", desc: "Soft and flaky bread brushed with butter.", image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=150&q=80" }
+                ]
+            }
+        ];
+
+        // =======================================================
+        // SMART PAGINATION ENGINE
+        // =======================================================
+        const container = document.getElementById('all-pages-container');
+        const SLOTS_PAGE_1 = 9; 
+        const SLOTS_OTHER_PAGES = 11; 
+        
+        let currentPageNum = 1;
+        let currentSlotsUsed = 0;
+        let currentPageDiv = createNewPage(currentPageNum);
+        let currentPageContent = currentPageDiv.querySelector('.page-content');
+
+        function createNewPage(pageNum) {
+            const page = document.createElement('div');
+            page.className = 'a4-page';
+            page.id = `page-${pageNum}`;
+            
+            // Added crossorigin="anonymous" to logo
+            const headerHTML = pageNum === 1 ? `
+                <div class="menu-header">
+                    <img src="https://via.placeholder.com/150x150/111/D4AF37?text=LOGO" alt="Logo" class="client-logo" crossorigin="anonymous">
+                    <h1>Royal Biryani</h1>
+                </div>
+            ` : `<div style="height: 15px;"></div>`;
+
+            page.innerHTML = `
+                <div class="page-content">
+                    ${headerHTML}
+                </div>
+                <div class="page-num">Page ${pageNum}</div>
+                <button class="download-page-btn" data-html2canvas-ignore="true" onclick="downloadPage('page-${pageNum}')">
+                    ⬇ Download Page ${pageNum}
+                </button>
+            `;
+            container.appendChild(page);
+            return page;
+        }
+
+        menuSections.forEach(section => {
+            let maxSlots = currentPageNum === 1 ? SLOTS_PAGE_1 : SLOTS_OTHER_PAGES;
+
+            if (currentSlotsUsed + 1 >= maxSlots) {
+                currentPageNum++;
+                currentPageDiv = createNewPage(currentPageNum);
+                currentPageContent = currentPageDiv.querySelector('.page-content');
+                currentSlotsUsed = 0;
+                maxSlots = SLOTS_OTHER_PAGES;
+            }
+
+            currentPageContent.innerHTML += `<h2 class="category-title">${section.sectionName}</h2>`;
+            currentSlotsUsed += 1; 
+
+            section.items.forEach(item => {
+                if (currentSlotsUsed >= maxSlots) {
+                    currentPageNum++;
+                    currentPageDiv = createNewPage(currentPageNum);
+                    currentPageContent = currentPageDiv.querySelector('.page-content');
+                    currentSlotsUsed = 0;
+                    maxSlots = SLOTS_OTHER_PAGES;
+                    
+                    currentPageContent.innerHTML += `<h2 class="category-title">${section.sectionName} (Cont.)</h2>`;
+                    currentSlotsUsed += 1;
+                }
+
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://yourdomain.com/ar.html?dish=${item.id}`;
+                
+                // Added crossorigin="anonymous" to dish images and QR codes
+                currentPageContent.innerHTML += `
+                    <div class="dish-row">
+                        <div class="dish-img-container"><img src="${item.image}" alt="${item.name}" crossorigin="anonymous"></div>
+                        <div class="dish-info">
+                            <div class="dish-header">
+                                <span class="dish-name">${item.name}</span>
+                                <span class="dish-price">${item.price}</span>
+                            </div>
+                            <p class="dish-desc">${item.desc}</p>
+                        </div>
+                        <div class="dish-qr">
+                            <img src="${qrUrl}" alt="AR QR" crossorigin="anonymous">
+                            <span>AR View</span>
+                        </div>
+                    </div>
+                `;
+                currentSlotsUsed += 1; 
+            });
+        });
+
+        // =======================================================
+        // DOWNLOAD PAGE LOGIC (Fixed for Images)
+        // =======================================================
+        async function downloadPage(pageId) {
+            const pageElement = document.getElementById(pageId);
+            const btn = pageElement.querySelector('.download-page-btn');
+            
+            const originalText = btn.innerText;
+            btn.innerText = "⏳ Downloading...";
+
+            try {
+                // html2canvas settings optimized for smooth download
+                const canvas = await html2canvas(pageElement, {
+                    scale: 2, 
+                    useCORS: true, // Allow cross-origin images
+                    backgroundColor: '#0d0d0d',
+                    scrollX: 0,
+                    scrollY: -window.scrollY // Fixes scrolling bugs on capture
+                });
+
+                const link = document.createElement('a');
+                link.download = `Royal_Biryani_Menu_${pageId}.png`;
+                link.href = canvas.toDataURL('image/png'); // Error used to happen here
+                link.click();
+            } catch (err) {
+                console.error("Error generating canvas: ", err);
+                alert("Download failed. Please open this file using a Local Server (like VS Code Live Server) instead of just double clicking the HTML file.");
+            } finally {
+                btn.innerText = originalText;
+            }
+        }
+    </script>
+</body>
+</html>
